@@ -1,6 +1,6 @@
-from sqlmodel import SQLModel, Field
-from pydantic import EmailStr
-from typing import Optional
+from sqlmodel import SQLModel, Field, Relationship
+
+from typing import Optional, List
 from app.db.db_session import engine
 from enum import Enum
 from datetime import datetime
@@ -24,3 +24,7 @@ class Event(SQLModel, table = True):
     recurrence_pattern: Optional[RecurrencePattern] 
     owner_id: int = Field(foreign_key="user.id")
     create_dtm: Optional[datetime] = Field(default_factory=datetime.now)
+    permissions: List["EventPermission"] = Relationship(
+        back_populates="event",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}        
+    )

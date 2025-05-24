@@ -2,6 +2,7 @@ from typing import List
 from fastapi import HTTPException, status
 from app.schema.permission import ShareEventRequest, PermissionInfo, UpdatePermissionRequest
 from app.model.eventpermission import EventPermission, PermissionLevel
+from app.model.event import Event
 from sqlmodel import select
 
 async def check_existing_permission(share_event_req: ShareEventRequest, event_id: int, session) -> ShareEventRequest:
@@ -27,7 +28,7 @@ async def check_existing_permission(share_event_req: ShareEventRequest, event_id
             detail=f"Error checking existing permissions: {str(e)}"
         )
 
-async def insert_event_permissions(event_req_to_insert: ShareEventRequest, event_id: int, session):
+async def insert_event_permissions_batch(event_req_to_insert: ShareEventRequest, event_id: int, session):
     try:        
         new_permissions = [
             EventPermission(
@@ -49,6 +50,27 @@ async def insert_event_permissions(event_req_to_insert: ShareEventRequest, event
             detail=f"Failed to assign permissions: {str(e)}"
         )
 
+
+async def insert_event_permission_owner(events:List[Event], user_id: int, session):
+    try:        
+        permissions = [
+            EventPermission(event_id=event.id, user_id=user_id, permission=PermissionLevel.owner)
+            for event in events
+        ]
+
+        session.add_all(permissions)
+        session.commit()
+
+        return {"Message": "Permissions successfully assigned"}
+
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to assign permissions: {str(e)}"
+        )
+
+
 async def is_collaborator(event_id: int, user_id: int, session) -> bool:
     try:
         query = select(EventPermission).where(
@@ -64,6 +86,24 @@ async def is_collaborator(event_id: int, user_id: int, session) -> bool:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to find collaboration status : {str(e)}"
+        )
+
+
+async def is_viewer(event_id: int, user_id: int, session) -> bool:
+    try:
+        query = select(EventPermission).where(
+            EventPermission.event_id == event_id,
+            EventPermission.user_id == user_id,
+            EventPermission.permission == PermissionLevel.view  
+        )
+        result = session.exec(query).first()
+        return result is not None
+
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to find viewer status : {str(e)}"
         )
 
 async def list_event_permissions(event_id: int, session) -> List[PermissionInfo]:
@@ -84,47 +124,60 @@ async def list_event_permissions(event_id: int, session) -> List[PermissionInfo]
         session.rollback()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to find collaboration status : {str(e)}"
+            detail=f"Failed to find the list of event permissions : {str(e)}"
         )
 
 async def update_event_permission(event_id: int, user_id: int, permission_to_update: UpdatePermissionRequest, session)->PermissionInfo:
-    query = select(EventPermission).where(
-        EventPermission.event_id == event_id,
-        EventPermission.user_id == user_id
-    )
-    existing_permission = session.exec(query).first()
+    try:
+        query = select(EventPermission).where(
+            EventPermission.event_id == event_id,
+            EventPermission.user_id == user_id
+        )
+        existing_permission = session.exec(query).first()
 
-    if not existing_permission:
+        if not existing_permission:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Permission not found for this user and event"
+            )
+        
+        existing_permission.permission = permission_to_update.permission
+
+        session.commit()
+        session.refresh(existing_permission)
+        updated_permission = PermissionInfo(user_id=user_id, permission=existing_permission.permission)
+        return updated_permission
+    except Exception as e:
+        session.rollback()
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Permission not found for this user and event"
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to update_event_permission: {str(e)}"
         )
     
-    existing_permission.permission = permission_to_update.permission
-
-    session.commit()
-    session.refresh(existing_permission)
-    updated_permission = PermissionInfo(user_id=user_id, permission=existing_permission.permission)
-    return updated_permission
-
-
 
 async def delete_event_permission(event_id: int, user_id: int, session) -> PermissionInfo:
-    query = select(EventPermission).where(
-        EventPermission.event_id == event_id,
-        EventPermission.user_id == user_id
-    )
-    existing_permission = session.exec(query).first()
-    if not existing_permission:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Permission not found for this user and event"
+    try:
+        query = select(EventPermission).where(
+            EventPermission.event_id == event_id,
+            EventPermission.user_id == user_id
         )
-    deleted_permission_info = PermissionInfo(
-        user_id=existing_permission.user_id,
-        permission=existing_permission.permission
-    )
-    session.delete(existing_permission)
-    session.commit()
+        existing_permission = session.exec(query).first()
+        if not existing_permission:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Permission not found for this user and event"
+            )
+        deleted_permission_info = PermissionInfo(
+            user_id=existing_permission.user_id,
+            permission=existing_permission.permission
+        )
+        session.delete(existing_permission)
+        session.commit()
 
-    return deleted_permission_info
+        return deleted_permission_info
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to delete_event_permission: {str(e)}"
+        )

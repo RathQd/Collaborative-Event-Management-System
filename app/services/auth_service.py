@@ -5,6 +5,7 @@ from app.schema.token import TokenUserData, ReadToken
 from app.config import settings
 import jwt
 
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='api/auth/login')
 
 token_blacklist = set()
@@ -28,7 +29,7 @@ async def create_refresh_jwt_token(data: dict):
     token =jwt.encode(encoded_data, SECRET_KEY, ALGORITHM)
     return token
 
-async def verify_jwt_token(token: str, credentials_exception):    
+async def verify_jwt_token(token: str, credentials_exception):     
     if token in token_blacklist:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has been revoked")
     try:        

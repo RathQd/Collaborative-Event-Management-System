@@ -9,7 +9,7 @@ class RecurrencePattern(str, Enum):
     MONTHLY = "monthly"
     YEARLY = "yearly"
 
-class Event(BaseModel):    
+class Event(BaseModel):        
     title: str 
     description: str 
     start_time: datetime 
@@ -18,7 +18,7 @@ class Event(BaseModel):
     is_recurring: bool  
     recurrence_pattern: Optional[RecurrencePattern]     
 
-class ReadEvent(BaseModel):    
+class ReadEvent(BaseModel):     
     title: str 
     description: str 
     start_time: datetime 
@@ -26,4 +26,14 @@ class ReadEvent(BaseModel):
     location: Optional[str] 
     is_recurring: bool  
     owner_id: int
-    recurrence_pattern: Optional[RecurrencePattern]     
+    recurrence_pattern: Optional[RecurrencePattern]         
+
+class ReadEvent(BaseModel):     
+    title: str 
+    description: str 
+    start_time: datetime 
+    end_time: datetime 
+    location: Optional[str] 
+    is_recurring: bool  
+    owner_id: int
+    recurrence_pattern: Optional[RecurrencePattern]   

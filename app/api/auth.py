@@ -10,20 +10,22 @@ from app.utils.hash import verify_hash
 
 router = APIRouter()
 
+#POST /api/auth/register - Register a new user
+
 @router.post("/register", status_code=status.HTTP_201_CREATED, response_model=ReadUser, responses={
     400: {"description": "Bad Request"},
     500: {"description": "Internal Server Error"}
 })
-async def register_user(user: RegisterUser, session: Session = Depends(get_session))->ReadUser:
+async def register_new_user(user: RegisterUser, session: Session = Depends(get_session))->ReadUser:
     created_user = await create_user(user=user, session=session)
-    print("Registering the User")
     return created_user
 
+# POST /api/auth/login - Login and receive an authentication token
 
 @router.post("/login", status_code=status.HTTP_200_OK, response_model=Token, responses={
     403: {"description": "User Not Found"}    
 })
-async def login(user_credentials: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session))->Token:
+async def login_and_get_token(user_credentials: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session))->Token:
     try:
         user = await get_user_by_email(user_credentials.username, session)        
     except HTTPException as e:
@@ -34,12 +36,13 @@ async def login(user_credentials: OAuth2PasswordRequestForm = Depends(), session
     read_token = Token(access_token=access_token, token_type='bearer')
     return read_token
 
+# POST /api/auth/refresh - Refresh an authentication token
 
 @router.post("/refresh", status_code=status.HTTP_200_OK, response_model=Token, responses={
     403: {"description": "User Not Found"}    
 })
-async def refresh(user_token_data:Token, session: Session = Depends(get_session))->Token:    
-    credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid Credentials", headers={"WWW-Authenticate":"Bearer"})
+async def refresh_token(user_token_data:Token, session: Session = Depends(get_session))->Token:    
+    credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid Credentials")
     try:        
         user = await verify_jwt_token(token=user_token_data.access_token, credentials_exception=credentials_exception)
         token_user_data = await get_user_by_email(user.email, session)                
@@ -49,11 +52,13 @@ async def refresh(user_token_data:Token, session: Session = Depends(get_session)
     read_token = Token(access_token=access_token, token_type='bearer')
     return read_token
 
+# POST /api/auth/logout - Invalidate the current token
+
 @router.post("/logout", status_code=status.HTTP_200_OK, responses={
     403: {"description": "User Not Found"}    
 })
-async def logout(user_token_data:Token, session: Session = Depends(get_session)):    
-    credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid Credentials", headers={"WWW-Authenticate":"Bearer"})
+async def invalidate_token(user_token_data:Token, session: Session = Depends(get_session)):    
+    credentials_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=f"Invalid Credentials")
     try:        
         user = await verify_jwt_token(token=user_token_data.access_token, credentials_exception=credentials_exception)
         await get_user_by_email(user.email, session)                

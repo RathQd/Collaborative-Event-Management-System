@@ -25,3 +25,10 @@ async def get_user_by_email(email: str, session):
             return user
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User not found in the system")        
+
+async def get_user_by_id(id: int, session):
+        user = session.exec(select(User).where(User.id == id)).first()
+        if user:
+            return user
+        else:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {id} not found in the system")                

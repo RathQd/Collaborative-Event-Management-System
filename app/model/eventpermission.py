@@ -1,5 +1,6 @@
-from sqlmodel import SQLModel, Field
+from sqlmodel import SQLModel, Field, Relationship
 from enum import Enum
+from typing import Optional
 
 class PermissionLevel(str, Enum):
     owner = "owner"
@@ -11,14 +12,4 @@ class EventPermission(SQLModel, table=True):
     event_id: int = Field(foreign_key="event.id")
     user_id: int = Field(foreign_key="user.id")
     permission: PermissionLevel
-
-
-# class EventPermission(SQLModel, table=True):
-#     id: int = Field(default=None, primary_key=True)
-#     event_id: int = Field(foreign_key="event.id")
-#     user_id: int = Field(foreign_key="user.id")
-#     permission: PermissionLevel
-
-#     __table_args__ = (
-#         UniqueConstraint("event_id", "user_id", name="unique_event_user_permission"),
-#     )
+    event: Optional["Event"] = Relationship(back_populates="permissions")
