@@ -10,6 +10,7 @@ from app.crud.version_history import get_event_version_by_uuid
 from typing import List, Any
 from uuid import UUID
 from app.utils.compare_version import compare_event_versions
+from fastapi_cache.decorator import cache
 
 
 router = APIRouter()
@@ -17,6 +18,7 @@ router = APIRouter()
 # GET /api/events/{id}/changelog - Get a chronological log of all changes to an event
 
 @router.get("/{id}/changelog", status_code=status.HTTP_200_OK,response_model=List[EventVersion])
+@cache(expire=120)
 async def get_event_change_logs(id: int, current_user:TokenUserData = Depends(get_current_user), session: Session = Depends(get_session)):
     logs = await get_logs_by_event_id(id, session)    
     if not logs:
@@ -32,6 +34,7 @@ async def get_event_change_logs(id: int, current_user:TokenUserData = Depends(ge
 # GET /api/events/{id}/diff/{versionId1}/{versionId2} - Get a diff between two versions
 
 @router.get("/{id}/diff/{versionId1}/{versionId2}", status_code=status.HTTP_200_OK,response_model=dict[str, dict[str, Any]])
+@cache(expire=120)
 async def diff_versions(id: int, versionId1: UUID, versionId2: UUID, current_user:TokenUserData = Depends(get_current_user), session: Session = Depends(get_session)):
     version1 = await get_event_version_by_uuid(id=versionId1, event_id=id, session=session)    
     version2 = await get_event_version_by_uuid(id=versionId2, event_id=id, session=session)    

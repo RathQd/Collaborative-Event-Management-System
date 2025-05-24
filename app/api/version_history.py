@@ -9,13 +9,14 @@ from uuid import UUID
 from app.crud.version_history import get_event_version_by_uuid
 from app.crud.collaboration import is_collaborator
 from app.crud.event import update_event_by_id
-
+from fastapi_cache.decorator import cache
 
 router = APIRouter()
 
 # GET /api/events/{id}/history/{versionId} - Get a specific version of an event
 
 @router.get("/{id}/history/{version_id}", status_code=status.HTTP_200_OK,response_model=EventVersion)
+@cache(expire=120)
 async def get_event_version(id: int, version_id: UUID, current_user:TokenUserData = Depends(get_current_user), session: Session = Depends(get_session)):
     print(version_id)
     version = await get_event_version_by_uuid(version_id, id, session)    
