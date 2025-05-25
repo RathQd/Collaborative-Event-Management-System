@@ -34,7 +34,6 @@ async def create_new_event(event: Event, current_user:TokenUserData = Depends(ge
         404: {"description": "event not found"},
         500: {"description": "internal server error"}
 })
-@cache(expire=120)
 async def get_all_event(limit: int = 5, skip: int = 0, search: Optional[str] = "", current_user:TokenUserData = Depends(get_current_user), session: Session = Depends(get_session)):
     events = await get_all_event_of_current_user(current_user.id, limit, skip, search, session)
     if not events:
@@ -56,7 +55,7 @@ async def get_all_event(limit: int = 5, skip: int = 0, search: Optional[str] = "
         404: {"description": "event not found"},
         500: {"description": "internal server error"}
 })
-@cache(expire=120)
+@cache(expire=10)
 async def get_event(id: int, current_user:TokenUserData = Depends(get_current_user), session: Session = Depends(get_session)):
     event = await get_event_by_id(id, session)
     if not event:

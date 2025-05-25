@@ -44,7 +44,6 @@ async def share_event(id: int, share_event_req: ShareEventRequest, session: Sess
         403: {"description": "Permission denied"},
         500: {"description": "Internal server error"}
     })
-@cache(expire=120)
 async def list_permissions(id: int, session: Session = Depends(get_session), current_user:TokenUserData = Depends(get_current_user)):
     event = await get_event_by_id(id, session)
     if not event:

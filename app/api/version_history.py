@@ -17,7 +17,7 @@ router = APIRouter()
 # GET /api/events/{id}/history/{versionId} - Get a specific version of an event
 
 @router.get("/{id}/history/{version_id}", status_code=status.HTTP_200_OK,response_model=EventVersion)
-@cache(expire=120)
+@cache(expire=240)
 async def get_event_version(id: int, version_id: UUID, current_user:TokenUserData = Depends(get_current_user), session: Session = Depends(get_session)):
     print(version_id)
     version = await get_event_version_by_uuid(version_id, id, session)    

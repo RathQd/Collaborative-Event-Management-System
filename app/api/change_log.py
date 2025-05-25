@@ -18,7 +18,7 @@ router = APIRouter()
 # GET /api/events/{id}/changelog - Get a chronological log of all changes to an event
 
 @router.get("/{id}/changelog", status_code=status.HTTP_200_OK,response_model=List[EventVersion])
-@cache(expire=120)
+@cache(expire=10)
 async def get_event_change_logs(id: int, current_user:TokenUserData = Depends(get_current_user), session: Session = Depends(get_session)):
     logs = await get_logs_by_event_id(id, session)    
     if not logs:
