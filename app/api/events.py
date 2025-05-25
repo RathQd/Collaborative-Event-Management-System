@@ -71,7 +71,7 @@ async def get_event(id: int, current_user:TokenUserData = Depends(get_current_us
 
 # PUT /api/events/{id} - Update an event by ID
 
-@router.put('/{id}', status_code=status.HTTP_200_OK, response_model=ReadEvent, summary="For Real time update, check your spam too", 
+@router.put('/{id}', status_code=status.HTTP_200_OK, response_model=ReadEvent, summary="Update Event (For Real time update, check your spam too)", 
     responses={
         404: {"description": "event not found"},
         500: {"description": "internal server error"}
