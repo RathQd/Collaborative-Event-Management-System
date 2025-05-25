@@ -1,10 +1,9 @@
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from app.api import auth, events, collaboration, version_history, change_log
 from contextlib import asynccontextmanager
 from app.model import *
-from app.db.db_session import get_session
 from app.config import settings
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -12,13 +11,8 @@ import uvicorn
 @asynccontextmanager
 async def lifespan(app: FastAPI):    
     # app.state.db = drop_tables()
-    # app.state.db = create_tables()
-    try:         
-        FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")
-        with get_session() as session:
-                await session.exec("SELECT 1")            
-    except Exception as e:            
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Database not connected!!")   
+    # app.state.db = create_tables()         
+    FastAPICache.init(InMemoryBackend(), prefix="fastapi-cache")       
     
     yield
 
