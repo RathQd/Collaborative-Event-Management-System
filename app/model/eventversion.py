@@ -16,4 +16,5 @@ class EventVersion(SQLModel, table=True):
     recurrence_pattern: Optional[str]
     owner_id: int 
     edited_by: int = Field(foreign_key="user.id")
-    edited_at: datetime = Field(default_factory=datetime.now)    
+    edited_at: datetime = Field(default_factory=datetime.now)        
+    editor_email: Optional[str] = Field(default=None)

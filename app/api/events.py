@@ -89,7 +89,7 @@ async def update_event(id: int, event: Event, email: EmailStr, background_task: 
         )        
         if not has_access:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Permission denied: you are not allowed to update event")
-        event = await update_event_by_id(id, event, current_user.id, session)
+        event = await update_event_by_id(id, event, email, current_user.id, session)
         background_task.add_task(send_email, subject="Event Update Notification from CEMS",  body=f"The event with id='{event.id}' and title='{event.title}' has been successfully updated.", to_email=email)        
     except Exception as e:
         raise HTTPException(status_code=e.status_code, detail=f"{e}")

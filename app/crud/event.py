@@ -48,7 +48,7 @@ async def get_all_event_of_current_user(user_id, limit, skip, search, session):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no event found for user")
     return all_post
 
-async def update_event_by_id(id: int, event: Event, user_id:int, session)->ReadEvent:    
+async def update_event_by_id(id: int, event: Event, email: str, user_id:int, session)->ReadEvent:    
     try:
         event_to_update = session.exec(select(Event).where(Event.id == id)).first()    
         if event_to_update:
@@ -64,7 +64,8 @@ async def update_event_by_id(id: int, event: Event, user_id:int, session)->ReadE
                 recurrence_pattern=str(event_to_update.recurrence_pattern) if event_to_update.recurrence_pattern else None,
                 owner_id=event_to_update.owner_id,
                 edited_by=user_id,
-                edited_at=datetime.now()        
+                edited_at=datetime.now(), 
+                editor_email=email       
             )
             session.add(event_version)
 
