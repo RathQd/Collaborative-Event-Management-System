@@ -25,7 +25,7 @@ async def share_event(id: int, share_event_req: ShareEventRequest, session: Sess
     updated_events = deepcopy(share_event_req)
     event = await get_event_by_id(id, session)
     if not event:
-        raise HTTPException(status_code=404, detail="Event with id={id} not found")
+        raise HTTPException(status_code=404, detail=f"Event with id={id} not found")
     if (event.owner_id != current_user.id and not await is_collaborator(event_id=id, user_id=current_user.id, session=session)):
         raise HTTPException(status_code=403, detail="Permission denied ! You need to be a owner of the event to share")
     
@@ -48,7 +48,7 @@ async def share_event(id: int, share_event_req: ShareEventRequest, session: Sess
 async def list_permissions(id: int, session: Session = Depends(get_session), current_user:TokenUserData = Depends(get_current_user)):
     event = await get_event_by_id(id, session)
     if not event:
-        raise HTTPException(status_code=404, detail="Event with id={id} not found")
+        raise HTTPException(status_code=404, detail=f"Event with id={id} not found")
     if (event.owner_id != current_user.id and not await is_collaborator(event_id=id, user_id=current_user.id, session=session)):
         raise HTTPException(status_code=403, detail="Permission denied: you are not allowed to view permissions")
     permissions = await list_event_permissions(event_id=id, session=session)            
@@ -65,7 +65,7 @@ async def list_permissions(id: int, session: Session = Depends(get_session), cur
 async def update_permission(id: int, user_id: int, permission_req: UpdatePermissionRequest, session: Session = Depends(get_session), current_user:TokenUserData = Depends(get_current_user)):
     event = await get_event_by_id(id, session)
     if not event:
-        raise HTTPException(status_code=404, detail="Event with id={id} not found")
+        raise HTTPException(status_code=404, detail=f"Event with id={id} not found")
     if (event.owner_id != current_user.id and not await is_collaborator(event_id=id, user_id=current_user.id, session=session)):
         raise HTTPException(status_code=403, detail="Permission denied: you are not allowed to update permissions")
 
@@ -83,7 +83,7 @@ async def update_permission(id: int, user_id: int, permission_req: UpdatePermiss
 async def delete_permission(id: int, user_id: int, session: Session = Depends(get_session), current_user:TokenUserData = Depends(get_current_user)):
     event = await get_event_by_id(id, session)
     if not event:
-        raise HTTPException(status_code=404, detail="Event with id={id} not found")
+        raise HTTPException(status_code=404, detail=f"Event with id={id} not found")
     if (event.owner_id != current_user.id and not await is_collaborator(event_id=id, user_id=current_user.id, session=session)):
         raise HTTPException(status_code=403, detail="Permission denied: you are not allowed to delete permissions")
 

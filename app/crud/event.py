@@ -36,9 +36,14 @@ async def get_event_by_id(id: int, session)->ReadEvent:
 
 async def get_all_event_of_current_user(user_id, limit, skip, search, session):    
     all_post = session.exec(select(Event)
-        .join(EventPermission, EventPermission.event_id == Event.id)
-        .where(EventPermission.user_id == user_id).filter(Event.title.contains(search)).limit(limit).offset(skip)
-        .distinct()).all()
+    .join(EventPermission, EventPermission.event_id == Event.id)
+    .where(
+        EventPermission.user_id == user_id,
+        Event.title.contains(search)
+    )
+    .limit(limit)
+    .offset(skip)
+    .distinct()).all()
     if not all_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="no event found for user")
     return all_post

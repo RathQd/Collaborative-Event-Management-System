@@ -6,7 +6,7 @@ from sqlmodel import Session
 from app.db.db_session import get_session
 from app.crud.event import create_event, get_event_by_id, delete_event_by_id, update_event_by_id, create_events_batch, get_all_event_of_current_user
 from app.services.auth_service import get_current_user
-from app.schema.event import Event, ReadEvent
+from app.schema.event import Event, ReadEvent, ReadListEvent
 from app.model.event import Event as WriteEvent
 from app.crud.collaboration import is_collaborator, is_viewer
 from app.utils.email_utils import send_email
@@ -29,7 +29,7 @@ async def create_new_event(event: Event, current_user:TokenUserData = Depends(ge
 
 # GET /api/events - List all events the user has access to with pagination and filtering
 
-@router.get("/", status_code=status.HTTP_200_OK, response_model=List[ReadEvent], 
+@router.get("/", status_code=status.HTTP_200_OK, response_model=List[ReadListEvent], 
     responses={
         404: {"description": "event not found"},
         500: {"description": "internal server error"}
@@ -51,7 +51,7 @@ async def get_all_event(limit: int = 5, skip: int = 0, search: Optional[str] = "
 
 # GET /api/events/{id} - Get a specific event by ID
 
-@router.get("/{id:int}", status_code=status.HTTP_200_OK, response_model=ReadEvent, 
+@router.get("/{id:int}", status_code=status.HTTP_200_OK, response_model=ReadListEvent, 
     responses={
         404: {"description": "event not found"},
         500: {"description": "internal server error"}
@@ -90,9 +90,9 @@ async def update_event(id: int, event: Event, email: EmailStr, background_task: 
         if not has_access:
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Permission denied: you are not allowed to update event")
         event = await update_event_by_id(id, event, current_user.id, session)
-        background_task.add_task(send_email, subject="Event Update Notification",  body=f"The event with id='{event.id}' and title='{event.title}' has been successfully updated.", to_email=email)        
+        background_task.add_task(send_email, subject="Event Update Notification from CEMS",  body=f"The event with id='{event.id}' and title='{event.title}' has been successfully updated.", to_email=email)        
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{e}")
+        raise HTTPException(status_code=e.status_code, detail=f"{e}")
     return event
 
 # DELETE /api/events/{id} - Delete an event by ID

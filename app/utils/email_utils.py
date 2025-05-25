@@ -17,8 +17,7 @@ def send_email(subject: str, body: str, to_email: str) -> bool:
         with smtplib.SMTP("smtp.gmail.com", 587) as server:
             server.starttls()
             server.login(from_email, password)
-            server.sendmail(from_email, to_email, msg.as_string())
-        print(f"Email sent successfully to {to_email}")
+            server.sendmail(from_email, to_email, msg.as_string())        
         return True
     except smtplib.SMTPException as e:
         print(f"Failed to send email to {to_email}: {e}")

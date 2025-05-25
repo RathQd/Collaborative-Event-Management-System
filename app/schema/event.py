@@ -37,3 +37,14 @@ class ReadEvent(BaseModel):
     is_recurring: bool  
     owner_id: int
     recurrence_pattern: Optional[RecurrencePattern]   
+
+class ReadListEvent(BaseModel):     
+    id: int
+    title: str 
+    description: str 
+    start_time: datetime 
+    end_time: datetime 
+    location: Optional[str] 
+    is_recurring: bool  
+    owner_id: int
+    recurrence_pattern: Optional[RecurrencePattern]  

@@ -7,6 +7,7 @@ from app.model.event import Event, RecurrencePattern
 from app.schema.token import TokenUserData
 from uuid import UUID
 from app.crud.version_history import get_event_version_by_uuid
+from app.crud.event import get_event_by_id
 from app.crud.collaboration import is_collaborator
 from app.crud.event import update_event_by_id
 from fastapi_cache.decorator import cache
@@ -36,6 +37,9 @@ async def get_event_version(id: int, version_id: UUID, current_user:TokenUserDat
 
 @router.post("/{id}/rollback/{version_id}", status_code=status.HTTP_200_OK)
 async def rollback_event(id: int, version_id: UUID, current_user:TokenUserData=Depends(get_current_user), session: Session = Depends(get_session)):
+    event_exist = await get_event_by_id(id, session)
+    if not event_exist:
+        raise HTTPException(status_code=404, detail=f"Event with id={id} not found")
     version = await get_event_version_by_uuid(version_id, id, session)    
     if not version:
         raise HTTPException(status_code=404, detail="Version not found")

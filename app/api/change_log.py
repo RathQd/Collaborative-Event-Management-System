@@ -40,9 +40,9 @@ async def diff_versions(id: int, versionId1: UUID, versionId2: UUID, current_use
     version2 = await get_event_version_by_uuid(id=versionId2, event_id=id, session=session)    
     
     if not version1:
-        raise HTTPException(status_code=404, detail="Event version not found with versionId1")
+        raise HTTPException(status_code=404, detail=f"Event version not found with {versionId1}")
     if not version2:
-        raise HTTPException(status_code=404, detail="Event version not found with versionId2")
+        raise HTTPException(status_code=404, detail=f"Event version not found with {versionId2}")
     has_access = (
             version1.owner_id == current_user.id
             or await is_collaborator(event_id=id, user_id=current_user.id, session=session)        
