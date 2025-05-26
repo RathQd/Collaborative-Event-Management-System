@@ -1,139 +1,109 @@
-📅 Collaborative Event Management System - FastAPI
-A robust and collaborative Event Management System built from scratch using FastAPI, offering secure user authentication, advanced event sharing features, and version-controlled event data — all integrated with a Github Actions CI/CD pipeline for seamless delivery.
+# 📅 Collaborative Event Management System - FastAPI
 
-📌 Features
-🔐 Authentication: Secure login, registration, token-based access (JWT)
-
-🗓️ Event Management: Create, update (with real time update), list, and delete events with full versioning
-
-👥 Collaboration: Share events with users, assign permissions
-
-🔁 Version Control: Track changes, rollback to previous states
-
-🧾 Changelog & Diffs: Audit changes and compare versions
-
-🐳 Dockerized Application
-
-🛠️ CI/CD Pipeline: Integrated using GitHub Actions
+A **Collaborative Event Management System** built from scratch using **FastAPI**, enabling secure event creation, sharing, versioning, and real-time updates via email. Features include a scalable backend with GitHub Actions CI/CD pipeline integration.
 
 
-🏗️ Tech Stack
-FastAPI - Blazing fast web framework
+## 📌 Features
+- **🔗 RESTful API** with FastAPI
+- **💾 Database**: PostgreSQL with SQLModel ORM
+- **✅ Data Validation**: Pydantic
+- **🔄 Database Migrations**: Alembic
+- **🔐 Secure Endpoints**: JWT Authentication
+- **🐳 Dockerized Application**
+- **🛠️ Continuous Integration**: GitLab CI/CD Pipeline
 
-SQLModel - SQLAlchemy-based ORM
+## 🏗️ Tech Stack
+- **FastAPI** - High-performance web framework
+- **SQLModel** - ORM for database interactions
+- **Pydantic** - Data validation and settings management
+- **Alembic** - Database migration tool
+- **JWT Tokens** - Secure authentication & authorization
+- **PostgreSQL** - Relational database
+- **Docker** - Containerized deployment
+- **Github Actions CI/CD** - Continuous integration and deployment
 
-Pydantic - Data parsing and validation
-
-Alembic - DB schema migrations
-
-JWT - Token-based authentication
-
-PostgreSQL - Relational DB
-
-Docker - Containerized setup
-
-GitHub Actions - CI/CD pipeline for testing and deployment
-
-🚀 Getting Started
-1️⃣ Clone the Repository
-bash
-Copy
-Edit
+## 🚀 Getting Started
+### 1️⃣ Clone the Repository
+```bash
 git clone https://github.com/RathQd/Collaborative-Event-Management-System.git
-cd event-management-system
-2️⃣ Setup Environment Variables
-Create a .env file at the root:
+cd python_fastapi
+```
 
-env
-Copy
-Edit
-DATABASE_URL=postgresql://username:password@localhost/dbname
+### 2️⃣ Setup Environment Variables
+Create a `.env` file in the root directory and configure your database & JWT settings.
+```env
+# PostgreSQL Database Configuration
+DATABASE_HOSTNAME=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=your_database_name
+DATABASE_USERNAME=your_database_user
+DATABASE_PASSWORD=your_database_password
+
+# JWT Authentication Configuration
 SECRET_KEY=your-secret-key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
-🛠️ Run Locally
-🐍 Without Docker
-bash
-Copy
-Edit
+
+# Email SMTP Configuration
+EMAIL_ID=your-email@example.com
+EMAIL_PASSWORD=your-email-password
+```
+
+#### 🖥️ Without Docker (Local Environment)
+```bash
 pip install -r requirements.txt
-uvicorn app.main:app --reload
-🔄 Run Migrations
-bash
-Copy
-Edit
+```
+
+### 4️⃣ Run Migrations and App
+```bash
 alembic upgrade head
-📡 API Documentation
-Swagger UI: http://localhost:8000/docs
+uvicorn app.main:app 
+```
 
-ReDoc: http://localhost:8000/redoc
+## 📡 API Documentation
+FastAPI provides interactive API docs:
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
 
-📚 API Endpoints Overview
-🔐 Authentication
-POST /api/auth/register
-Registers a new user with required credentials. Returns success message or validation error.
+## 🔐 Authentication Endpoints
 
-POST /api/auth/login
-Authenticates a user and returns a JWT access token and refresh token.
+- **POST** `/api/auth/register` — Register a new user  
+- **POST** `/api/auth/login` — Login and receive an authentication token  
+- **POST** `/api/auth/refresh` — Refresh an authentication token  
+- **POST** `/api/auth/logout` — Invalidate the current token  
 
-POST /api/auth/refresh
-Accepts a refresh token and returns a new access token to maintain session continuity.
+## 📅 Event Management Endpoints
 
-POST /api/auth/logout
-Invalidates the current JWT, effectively logging the user out.
+- **POST** `/api/events` — Create a new event  
+- **GET** `/api/events` — List all events the user has access to with pagination and filtering  
+- **GET** `/api/events/{id}` — Get a specific event by ID  
+- **PUT** `/api/events/{id}` — Update an event by ID (💡 Sends real-time email updates to collaborators)  
+- **DELETE** `/api/events/{id}` — Delete an event by ID  
+- **POST** `/api/events/batch` — Create multiple events in a single request  
 
-📅 Event Management
-POST /api/events
-Creates a new event. Requires fields like title, description, start_time, end_time, etc.
+## 👥 Collaboration Endpoints
 
-GET /api/events
-Retrieves a list of events the authenticated user has access to. Supports pagination and search by keyword.
+- **POST** `/api/events/{id}/share` — Share an event with other users  
+- **GET** `/api/events/{id}/permissions` — List all permissions for an event  
+- **PUT** `/api/events/{id}/permissions/{userId}` — Update permissions for a user  
+- **DELETE** `/api/events/{id}/permissions/{userId}` — Remove access for a user  
 
-GET /api/events/{id}
-Fetches details of a specific event by its unique ID.
+## 🕒 Version History Endpoints
 
-PUT /api/events/{id}
-Updates an existing event with real time update in email. Requires permission to modify. Accepts full data.
+- **GET** `/api/events/{id}/history/{versionId}` — Get a specific version of an event  
+- **POST** `/api/events/{id}/rollback/{versionId}` — Rollback to a previous version  
 
-DELETE /api/events/{id}
-Deletes an event. Only the creator or users with deletion rights can perform this action.
+## 📜 Changelog & Diff Endpoints
 
-POST /api/events/batch
-Creates multiple events in one request by sending an array of event objects.
+- **GET** `/api/events/{id}/changelog` — Get a chronological log of all changes to an event  
+- **GET** `/api/events/{id}/diff/{versionId1}/{versionId2}` — Get a diff between two versions  
 
-👥 Collaboration
-POST /api/events/{id}/share
-Shares an event with specified users. Accepts user_id and permission_level (e.g., editor, viewer).
+## 📦 Deployment with Github actions CI/CD
+This project integrates a **Github actions CI/CD pipeline** for automated testing and deployment.
 
-GET /api/events/{id}/permissions
-Lists all collaborators and their permission levels for the given event.
+## 🤝 Contributing
+Contributions are welcome! Feel free to open issues or submit PRs.
 
-PUT /api/events/{id}/permissions/{userId}
-Updates the permission level (editor/viewer) for a specific collaborator.
+---
+**Star ⭐ the repo if you found it useful!**
 
-DELETE /api/events/{id}/permissions/{userId}
-Removes a collaborator’s access to the event.
-
-🕒 Version History
-GET /api/events/{id}/history/{versionId}
-Retrieves a specific historical version of an event by version ID.
-
-POST /api/events/{id}/rollback/{versionId}
-Rolls back the event to a previous version, restoring old data and creating a new version entry.
-
-🔍 Changelog & Diff
-GET /api/events/{id}/changelog
-Returns a chronological list of changes made to the event with timestamps and editors.
-
-GET /api/events/{id}/diff/{versionId1}/{versionId2}
-Compares two versions of an event and returns the field-level differences in structured format.
-
-📦 Deployment with GitHub Actions
-This project includes a GitHub Actions workflow that:
-Builds and deploys the app (can be extended for production environments)
-
-🤝 Contributing
-Contributions are welcome!
-Open issues, suggest features, or submit PRs to improve this project.
-
-⭐ Star this repo if you found it useful and want to support the project!
